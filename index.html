@@ -200,13 +200,11 @@
 
         axios({
           method: 'post',
-          url: 'http://125.209.234.165/api/shopping/categories',
+          url: 'https://sellfiveback.herokuapp.com/api/shopping/categories',
           "timeout": 0,
           "headers": {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-			"X-Naver-Client-Id" : "ECNwIotudGlqF6ItONCS",
-			"X-Naver-Client-Secret" :"rlP1Lrut9f"
+            "Access-Control-Allow-Origin": "*"
           },
           data: JSON.stringify(params)
         }).then(function (resp) {
