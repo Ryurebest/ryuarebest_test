@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sell Five</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="category.js"></script>
+  <script>
+    const basicSelectOption = "<option>선택</option>";
+
+    let searchCategory = { "name": "", "cid": "" };
+
+    $(document).ready(function () {
+      init();
+
+      $(".directDate").change(function () {
+        $("input:radio[name=radDate]:input[value=direct]").prop("checked", true);
+      });
+
+      $("#category1").change(function () {
+        $("#category2Div").hide();
+        $("#category3Div").hide();
+        $("#category4Div").hide();
+
+        const selVal = $("#category1 option:selected").val();
+        const selText = $("#category1 option:selected").text();
+
+        searchCategory.cid = selVal;
+        searchCategory.name = selText;
+
+
+        $("#category2").empty();
+        let strCat2Opt = basicSelectOption;
+        category2.forEach(el => {
+          if (el.parentCid === selVal) {
+            strCat2Opt += "<option value='" + el.cid + "'>" + el.name + "</option>";
+          }
+        });
+        if (strCat2Opt.length > 19) {
+          $("#category2").append(strCat2Opt);
+          $("#category2Div").show();
+        }
+      });
+
+      $("#category2").change(function () {
+        $("#category3Div").hide();
+        $("#category4Div").hide();
+
+        const selVal = $("#category2 option:selected").val();
+        const selText = $("#category2 option:selected").text();
+
+
+        searchCategory.cid = selVal;
+        searchCategory.name = selText;
+
+
+        $("#category3").empty();
+        let strCat3Opt = basicSelectOption;
+        category3.forEach(el => {
+          if (el.parentCid === selVal) {
+            // console.log(el.parentCid, el.cid, el.name);
+            strCat3Opt += "<option value='" + el.cid + "'>" + el.name + "</option>";
+          }
+        });
+        if (strCat3Opt.length > 19) {
+          $("#category3").append(strCat3Opt);
+          $("#category3Div").show();
+        }
+      });
+
+      $("#category3").change(function () {
+        $("#category4Div").hide();
+
+        const selVal = $("#category3 option:selected").val();
+        const selText = $("#category3 option:selected").text();
+
+        searchCategory.cid = selVal;
+        searchCategory.name = selText;
+
+        $("#category4").empty();
+        let strCat4Opt = basicSelectOption;
+        category4.forEach(el => {
+          if (el.parentCid === selVal) {
+            // console.log(el.parentCid, el.cid, el.name);
+            strCat4Opt += "<option value='" + el.cid + "'>" + el.name + "</option>";
+          }
+        });
+        if (strCat4Opt.length > 19) {
+          $("#category4").append(strCat4Opt);
+          $("#category4Div").show();
+        }
+      });
+
+
+
+      $("input:radio[name=radDate]").change(function () {
+        const periodType = $("input:radio[name=radDate]:checked").val();
+        console.log(periodType);
+        if (periodType == 'month1') {
+          getInitDate();
+        } else if (periodType == 'month3') {
+          const date = new Date();
+          // endDate 초기화 추가
+          $("#endDate").val(getDateFormat(date));
+          date.setMonth(date.getMonth() - 3);
+          $("#startDate").val(getDateFormat(date));
+        } else if (periodType == 'year1') {
+          const date = new Date();
+          // endDate 초기화 추가
+          $("#endDate").val(getDateFormat(date));
+          date.setFullYear(date.getFullYear() - 1);
+          $("#startDate").val(getDateFormat(date));
+        }
+      });
+
+      $("#chkDeviceAll").change(function () {
+        if ($("#chkDeviceAll").is(":checked") == true) {
+          $(".chkDevice").prop("checked", true);
+        }
+        else {
+          $(".chkDevice").prop("checked", false);
+        };
+      });
+
+      $(".chkDevice").change(function () {
+        if ($(".chkDevice:checkbox:checked").length == 2) {
+          $("#chkDeviceAll").prop("checked", true);
+        }
+        else {
+          $("#chkDeviceAll").prop("checked", false);
+        }
+      });
+
+      $("#chkGenderAll").change(function () {
+        if ($("#chkGenderAll").is(":checked") == true) {
+          $(".chkGender").prop("checked", true);
+        }
+        else {
+          $(".chkGender").prop("checked", false);
+        }
+      });
+
+      $(".chkGender").change(function () {
+        if ($(".chkGender:checkbox:checked").length == 2) {
+          $("#chkGenderAll").prop("checked", true);
+        }
+        else {
+          $("#chkGenderAll").prop("checked", false);
+        }
+      });
+
+      $("#chkAgesAll").change(function () {
+        if ($("#chkAgesAll").is(":checked") == true) {
+          $(".chkAges").prop("checked", true);
+        }
+        else {
+          $(".chkAges").prop("checked", false);
+        }
+      });
+
+      $(".chkAges").change(function () {
+        if ($(".chkAges:checkbox:checked").length == 6) {
+          $("#chkAgesAll").prop("checked", true);
+        }
+        else {
+          $("#chkAgesAll").prop("checked", false);
+        }
+      });
+
+
+      $("#btnSearch").click(function () {
+        if (searchCategory.name.length < 1) alert("Invalid Category!");
+        let params = {
+          "startDate": $("#startDate").val(),
+          "endDate": $("#endDate").val(),
+          "timeUnit": $("#selDateType").val(),
+          "category": [
+            { "name": searchCategory.name, "param": [searchCategory.cid] }
+
+          ]
+        }
+
+        console.log("basic params", params);
+
+        if ($(".chkDevice:checkbox:checked").length == 1) params.device = $(".chkDevice:checkbox:checked").val();
+        if ($(".chkGender:checkbox:checked").length == 1) params.gender = $(".chkGender:checkbox:checked").val();
+        if ($(".chkAges:checkbox:checked").length > 0 && $(".chkAges:checkbox:checked").length < 6) {
+          let ageArray = [];
+          $.each($(".chkAges:checked"), function () {
+            ageArray.push($(this).val());
+          });
+          params.ages = ageArray;
+        }
+
+        console.log("add params", params);
+
+        axios({
+          method: 'post',
+          url: 'http://125.209.234.165/api/shopping/categories',
+          "timeout": 0,
+          "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+			"X-Naver-Client-Id" : "ECNwIotudGlqF6ItONCS",
+			"X-Naver-Client-Secret" :"rlP1Lrut9f"
+          },
+          data: JSON.stringify(params)
+        }).then(function (resp) {
+          // sellfive_back_nodejs 에 제대로 호출될 경우 console에서 확인 가능
+          //console.log(resp.data.results[0].data);
+          console.log(resp.data.toString())
+          // setResultTable(resp.data.results[0].data);
+        })
+      });
+
+
+
+
+
+
+    });
+
+    function init() {
+      $("#category2Div").hide();
+      $("#category3Div").hide();
+      $("#category4Div").hide();
+      let strCat1Opt = basicSelectOption;
+      category1.forEach(el => {
+        strCat1Opt += "<option value='" + el.cid + "'>" + el.name + "</option>";
+      });
+      $("#category1").append(strCat1Opt);
+
+      $("input:radio[name=radDate]:input[value=month1]").prop("checked", true);
+
+      getInitDate();
+    };
+
+    function getDateFormat(dateObj) {
+      let month = (dateObj.getMonth() + 1);
+      let day = dateObj.getDate();
+      if (month < 10)
+        month = "0" + month;
+      if (day < 10)
+        day = "0" + day;
+      const result = dateObj.getFullYear() + '-' + month + '-' + day;
+      return result;
+    };
+
+    function getInitDate() {
+      const date = new Date();
+      $("#endDate").val(getDateFormat(date));
+      date.setMonth(date.getMonth() - 1);
+      $("#startDate").val(getDateFormat(date));
+    };
+
+
+  </script>
+</head>
+
+<body>
+  <div class="topBar">
+    <h3><span style="color: orange; margin-left: 20px;">SELL</span> FIVE</h3>
+  </div>
+  <div class="middle">
+    <div class="sideBar">
+      <ul>카테고리별 검색</ul>
+      <ul>키워드별 검색</ul>
+    </div>
+    <div class="content">
+      <div class="topCategory">
+        <div class="categoryDiv" id="category1Div">
+          <label for="category1">분류 1: </label>
+          <select name="category1" id="category1">
+          </select>
+        </div>
+        <div class="categoryDiv" id="category2Div">
+          <label for="category2">분류 2: </label>
+          <select name="category2" id="category2">
+          </select>
+        </div>
+        <div class="categoryDiv" id="category3Div">
+          <label for="category3">분류 3: </label>
+          <select name="category3" id="category3">
+          </select>
+        </div>
+        <div class="categoryDiv" id="category4Div">
+          <label for="category4">분류 4: </label>
+          <select name="category4" id="category4">
+          </select>
+        </div>
+      </div>
+      <div class="reqDiv">
+        <div class="dateDiv">
+          <label style="font-weight: bold;">기간</label>
+          <select name="selDateType" id="selDateType" class="dateType">
+            <option value="day">일간</option>
+            <option value="week">주간</option>
+            <option value="month">월간</option>
+          </select>
+          <button class="setDate"><input type="radio" name="radDate" value="month1">1개월</button>
+          <button class="setDate"><input type="radio" name="radDate" value="month3">3개월</button>
+          <button class="setDate"><input type="radio" name="radDate" value="year1">1년</button>
+          <button class="setDate"><input type="radio" name="radDate" value="direct">직접입력</button>
+          <input type="date" class="directDate" name="startDate" id="startDate">
+          <input type="date" class="directDate" name="endDate" id="endDate">
+        </div>
+
+        <div class="deviceDiv">
+          <label for="device" style="font-weight: bold;">기기별</label>
+          <input type="checkbox" name="device" id="chkDeviceAll"><label for="chkDeviceAll" class="tagLabel">전체</label>
+          <input type="checkbox" class="chkDevice" name="device" id="chkDevicePc" value="pc"><label for="chkDevicePc"
+            class="tagLabel">PC</label>
+          <input type="checkbox" class="chkDevice" name="device" id="chkDeviceMo" value="mo"><label for="chkDeviceMo"
+            class="tagLabel">모바일</label>
+        </div>
+        <div class="verticalLine"></div>
+        <div class="genderDiv">
+          <label for="gender" style="font-weight: bold;">성별</label>
+          <input type="checkbox" name="gender" id="chkGenderAll"><label for="chkGenderAll" class="tagLabel">전체</label>
+          <input type="checkbox" class="chkGender" name="gender" value="m" id="chkGenderM"><label for="chkGenderM"
+            class="tagLabel">남성</label>
+          <input type="checkbox" class="chkGender" name="gender" value="f" id="chkGenderF"><label for="chkGenderF"
+            class="tagLabel">여성</label>
+        </div>
+        <div class="verticalLine"></div>
+        <div class="agesDiv">
+          <label for="ages" style="font-weight: bold;">연령</label>
+          <input type="checkbox" name="ages" id="chkAgesAll"><label for="chkAgesAll" class="tagLabel">전체</label>
+          <input type="checkbox" class="chkAges" name="ages" id="chkAges10" value="10"><label for="chkAges10"
+            class="tagLabel">10대</label>
+          <input type="checkbox" class="chkAges" name="ages" id="chkAges20" value="20"><label for="chkAges20"
+            class="tagLabel">20대</label>
+          <input type="checkbox" class="chkAges" name="ages" id="chkAges30" value="30"><label for="chkAges30"
+            class="tagLabel">30대</label>
+          <input type="checkbox" class="chkAges" name="ages" id="chkAges40" value="40"><label for="chkAges40"
+            class="tagLabel">40대</label>
+          <input type="checkbox" class="chkAges" name="ages" id="chkAges50" value="50"><label for="chkAges50"
+            class="tagLabel">50대</label>
+          <input type="checkbox" class="chkAges" name="ages" id="chkAges60" value="60"><label for="chkAges60"
+            class="tagLabel">60대
+            이상</label>
+
+        </div>
+
+
+        <div class="searchDiv" style="text-align: center; height: 40px;">
+          <button id="btnSearch" style="width: 10rem; height: 100%; background-color: bisque;">
+            조회하기
+          </button>
+        </div>
+      </div>
+</body>
+
+</html>
